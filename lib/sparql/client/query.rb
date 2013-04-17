@@ -316,6 +316,9 @@ module SPARQL; class Client
     # @return [String]
     def to_s
       buffer = [form.to_s.upcase]
+      serialize = lambda { |s|
+        s.is_a?(String) ? s : "?#{s}"
+      }
 
       case form
         when :select, :describe
@@ -326,9 +329,14 @@ module SPARQL; class Client
           if options[:count]
             options[:count].each do |var, count|
               buffer << '( COUNT(' + (options[:distinct] ? 'DISTINCT ' : '') +
-                (var.is_a?(String) ? var : "?#{var}") + ') AS ' + (count.is_a?(String) ? count : "?#{count}") + ' )'
+                serialize.call(var) + ') AS ' + serialize.call(count) + ' )'
             end
           end
+          if options[:sum] && options[:sum].is_a?(Hash)
+            var, newvar  = Array(options[:sum]).first
+            buffer << "(SUM(#{serialize.call(var)}) AS #{serialize.call(newvar)})"
+          end
+
         when :construct
           buffer << '{'
           buffer += serialize_patterns(options[:template])

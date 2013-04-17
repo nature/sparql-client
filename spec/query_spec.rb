@@ -52,6 +52,8 @@ describe SPARQL::Client::Query do
       @query.select(:s).distinct.where([:s, :p, :o]).to_s.should == "SELECT DISTINCT ?s WHERE { ?s ?p ?o . }"
     end
 
+
+
     it "should support REDUCED" do
       @query.select(:s, :reduced => true).where([:s, :p, :o]).to_s.should == "SELECT REDUCED ?s WHERE { ?s ?p ?o . }"
       @query.select(:s).reduced.where([:s, :p, :o]).to_s.should == "SELECT REDUCED ?s WHERE { ?s ?p ?o . }"
@@ -68,6 +70,10 @@ describe SPARQL::Client::Query do
       @query.select(:count => { :s => '?c' }).where([:s, :p, :o]).to_s.should == "SELECT  ( COUNT(?s) AS ?c ) WHERE { ?s ?p ?o . }"
       @query.select(:count => { '?s' => '?c' }).where([:s, :p, :o]).to_s.should == "SELECT  ( COUNT(?s) AS ?c ) WHERE { ?s ?p ?o . }"
       @query.select(:o, :count => { :s => :c }).where([:s, :p, :o]).to_s.should == "SELECT ?o ( COUNT(?s) AS ?c ) WHERE { ?s ?p ?o . }"
+    end
+
+    it "should support SUM" do
+      @query.select(:s, :sum => {:count => :total}).where([:s, :p, :o]).where([:s, :p1, :count]).to_s.should == "SELECT ?s (SUM(?count) AS ?total) WHERE { ?s ?p ?o . ?s ?p1 ?count . }"
     end
 
     it "should support GROUP BY" do
